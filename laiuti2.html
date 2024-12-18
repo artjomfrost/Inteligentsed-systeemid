@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+	   let andmed={
+    "Tallinn": ["Tapa"],
+    "Tapa":["Tallinn","Rakvere","Tartu"],
+    "Rakvere":["Tapa", "Narva"],
+    "Narva":["Rakvere"],
+    "Tartu":["Tapa", "Valga", "Petseri"],
+    "Valga":["Tartu", "Petseri"],
+    "Petseri":["Tartu", "Valga"],
+    "Kunda":["Avinurme"],
+    "Avinurme":["Kunda"],
+    "Tootsi":["Lavassaare"],
+    "Lavassaare":["Tootsi"]
+};
+      function otsi(){
+	    let ahel=[s1.value];
+        let koht=0;
+        while(koht<ahel.length){
+		   for(let uus of andmed[ahel[koht]]){
+		      if(!ahel.includes(uus)){
+			    ahel.push(uus);
+			  }
+		   }
+		   koht++;
+		}
+		console.log(ahel);
+		vastus.innerText=(ahel.includes(s2.value))?"jah":"ei";
+	  }
+	  //Koostage juurde kasutajaliides:
+	  //Andke kaks kohta, väljastage, kas seos on olemas
+	  function algus(){
+	      for(let jaam in andmed){
+		    let valik=document.createElement("option");
+			valik.text=jaam;
+			s1.add(valik);
+			valik=document.createElement("option");
+			valik.text=jaam;
+			s2.add(valik);
+		  }
+	  }
+	</script>
+  </head>
+  <body onload="algus()">
+    <select id="s1" onchange="otsi()"></select>
+    <select id="s2" onchange="otsi()"></select>
+	<div id="vastus"></div>
+  </body>
+</html>

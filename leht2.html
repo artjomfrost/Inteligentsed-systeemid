@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+   <script>
+    let algseis="6N";
+	let viimane=7;
+
+	function leiaAlamseisud(seis){
+	  let vastane=(seis.substring(seis.length-1)=="X")?"N":"X";
+	  let koht=parseInt(seis.substring(0, seis.length-1));
+	  //Loe alamseisudeks vaid need, mis ei lähe viimasest 
+	  //kohast kaugemale  12:34
+	  let vastused=[(koht+1)+vastane, (koht+2)+vastane];
+	  vastused=vastused.filter(vastus => 
+	    parseInt(vastus.substring(0, vastus.length-1))<=viimane);
+	  return vastused;
+	}
+	
+	function puu(seis){
+	   let vastus={s:seis};
+	   let a=leiaAlamseisud(seis);
+	   if(a.length>0){
+	      vastus["e"]=[];
+		  for(let alamseis of a){
+		     vastus["e"].push(puu(alamseis));
+		  }
+	   }
+	   return vastus;
+	}
+	
+	function puuHTML(seis){
+	   let sisemine="";
+	   let a=leiaAlamseisud(seis);
+	   if(a.length>0){
+	     sisemine="<ul>";
+		 for(let alamseis of a){
+		   sisemine+=puuHTML(alamseis);
+		 }
+		 sisemine+="</ul>"
+	   }
+	   return "<li>"+seis+sisemine+"</li>";
+	}
+	
+	console.log(puu("3X"));
+	
+	let v={s:"5X", e:[{s:"6N", e:[{s:"7X"}]}, {s:"7N"}]};
+	console.log(v);
+	
+	console.log(leiaAlamseisud(algseis));
+	
+   </script>
+  </head>
+  <body onload="kiht1.innerHTML=puuHTML('3X')">
+    <ul id="kiht1"></ul>
+  </body>
+</html>

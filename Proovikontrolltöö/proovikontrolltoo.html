@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L-Game Movement Example</title>
+    <script>
+        let algseis = [
+            ['B', '.', 'N', '.'],
+            ['B', 'B', 'B', 'R'],
+            ['.', 'R', 'R', 'R'],
+            ['.', 'N', '.', '.']
+        ];
+
+        let directions = [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [-1, 0]
+        ];
+
+        function leiaAlamseisud(seis) {
+
+            let moves = [];
+            for (let r = 0; r < seis.length; r++) {
+                for (let c = 0; c < seis[r].length; c++) {
+                    if (seis[r][c] === 'R') {
+                        for (let [dr, dc] of directions) {
+                            console.log(dr, dc);
+                            let nr = r + dr;
+                            let nc = c + dc;
+
+                            if (nr >= 0 && nr < seis.length && nc >= 0 && nc < seis[r].length && seis[nr][nc] === '.') {
+                                let newBoard = seis.map(row => [...row]); 
+                                newBoard[r][c] = '.'; 
+                                newBoard[nr][nc] = 'R';
+                                moves.push(newBoard);
+                            }
+
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+
+        window.onload = function() {
+            const output = document.getElementById("output");
+            let results = leiaAlamseisud(algseis);
+            results.forEach((board, index) => {
+                let boardHTML = board.map(row => row.join(" ")).join("<br>");
+                output.innerHTML += `<h4>Move ${index + 1}:</h4><pre>${boardHTML}</pre>`;
+            });
+        };
+    </script>
+</head>
+<body>
+    <h1>Possible Moves for Red</h1>
+    <div id="output"></div>
+</body>
+</html>

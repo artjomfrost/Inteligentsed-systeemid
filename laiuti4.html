@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      let andmed = {
+        "Tallinn": ["Tapa"],
+        "Tapa": ["Tallinn", "Rakvere", "Tartu"],
+        "Rakvere": ["Tapa", "Narva"],
+        "Narva": ["Rakvere"],
+        "Tartu": ["Tapa", "Valga", "Petseri"],
+        "Valga": ["Tartu", "Petseri"],
+        "Petseri": ["Tartu", "Valga"],
+        "Kunda": ["Avinurme"],
+        "Avinurme": ["Kunda"],
+        "Tootsi": ["Lavassaare"],
+        "Lavassaare": ["Tootsi"]
+      };
+
+      function otsi() {
+        let ahel = [s1.value];
+        let parent = {};
+        parent[s1.value] = null;
+        let koht = 0;
+
+        while (koht < ahel.length) {
+          for (let uus of andmed[ahel[koht]]) {
+            if (!parent.hasOwnProperty(uus)) {
+              parent[uus] = ahel[koht];
+              ahel.push(uus);
+            }
+          }
+          koht++;
+        }
+
+        if (parent.hasOwnProperty(s2.value)) {
+          let path = [];
+          let current = s2.value;
+          console.log(parent)
+
+          
+          while (current !== null) {
+            path.unshift(current);
+            current = parent[current];
+          }
+
+          vastus.innerText = "Path: " + path.join(" -> ");
+        } else {
+          vastus.innerText = "No path found!";
+        }
+      }
+
+      function algus() {
+        for (let jaam in andmed) {
+          let valik = document.createElement("option");
+          valik.text = jaam;
+          s1.add(valik);
+          valik = document.createElement("option");
+          valik.text = jaam;
+          s2.add(valik);
+        }
+      }
+    </script>
+  </head>
+  <body onload="algus()">
+    <select id="s1" onchange="otsi()"></select>
+    <select id="s2" onchange="otsi()"></select>
+    <div id="vastus"></div>
+  </body>
+</html>

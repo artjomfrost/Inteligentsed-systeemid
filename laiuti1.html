@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+	   let andmed={
+    "Tallinn": ["Tapa"],
+    "Tapa":["Tallinn","Rakvere","Tartu"],
+    "Rakvere":["Tapa", "Narva"],
+    "Narva":["Rakvere"],
+    "Tartu":["Tapa", "Valga", "Petseri"],
+    "Valga":["Tartu", "Petseri"],
+    "Petseri":["Tartu", "Valga"],
+    "Kunda":["Avinurme"],
+    "Avinurme":["Kunda"],
+    "Tootsi":["Lavassaare"],
+    "Lavassaare":["Tootsi"]
+}
+      function otsi1(){
+	    let ahel=["Valga"];
+        let koht=0;
+        while(koht<ahel.length){
+		   for(let uus of andmed[ahel[koht]]){
+		      if(!ahel.includes(uus)){
+			    ahel.push(uus);
+			  }
+		   }
+		   koht++;
+		}
+		console.log(ahel);
+	  }
+	</script>
+  </head>
+  <body onload="otsi1()">
+    <div>
+      <label for="pointA">Punkt A:</label>
+      <input type="text" id="pointA" placeholder="Enter Point A">
+      <br>
+      <label for="pointB">Punkt B:</label>
+      <input type="text" id="pointB" placeholder="Enter Point B">
+      <br>
+      <button onclick="otsi()">Kontrolli</button>
+    </div>
+  
+  </body>
+</html>

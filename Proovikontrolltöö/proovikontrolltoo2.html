@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>L-Piece Solver</title>
+</head>
+<body>
+    <pre id="game-board"></pre>
+    <script>
+let algseis = [
+    ['B', '.', 'N', '.'],
+    ['B', 'B', 'B', 'R'],
+    ['.', 'R', 'R', 'R'],
+    ['.', 'N', '.', '.']
+];
+
+const LShapes = [
+    [[0, 0], [1, 0], [2, 0], [2, 1]],
+    [[0, 0], [1, 0], [2, 0], [2, -1]],
+    [[0, 0], [0, 1], [0, 2], [1, 2]],
+    [[0, 0], [0, 1], [0, 2], [-1, 2]],
+    [[0, 0], [-1, 0], [-2, 0], [-2, -1]],
+    [[0, 0], [-1, 0], [-2, 0], [-2, 1]],
+    [[0, 0], [0, -1], [0, -2], [1, -2]],
+    [[0, 0], [0, -1], [0, -2], [-1, -2]],
+];
+
+function isValidMove(board, row, col, shape) {
+    for (let [dx, dy] of shape) {
+        let x = row + dx;
+        let y = col + dy;
+        if (x < 0 || x >= board.length || y < 0 || y >= board[0].length) {
+            return false;
+        }
+        if (board[x][y] !== '.') {
+            return false;
+        }
+    }
+    return true;
+}
+
+function applyMove(board, row, col, shape, mark) {
+    for (let [dx, dy] of shape) {
+        board[row + dx][col + dy] = mark;
+    }
+}
+
+function generateMoves(board, playerMark) {
+    let moves = [];
+    for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[row].length; col++) {
+            for (let shape of LShapes) {
+                if (isValidMove(board, row, col, shape)) {
+                    let newBoard = board.map(row => row.slice());
+                    applyMove(newBoard, row, col, shape, playerMark);
+                    moves.push(newBoard);
+                }
+            }
+        }
+    }
+    return moves;
+}
+
+function renderBoard(board) {
+    return board.map(row => row.join(' ')).join('\n');
+}
+
+function main() {
+    console.log("Исходное состояние:");
+    console.log(renderBoard(algseis));
+
+    const availableMoves = generateMoves(algseis, 'L');
+    if (availableMoves.length === 0) {
+        console.log("\nНет доступных ходов для фигуры L.");
+    } else {
+        console.log(`\nНайдено ${availableMoves.length} доступных хода(ов) для фигуры L:`);
+        availableMoves.forEach((move, index) => {
+            console.log(`\nХод ${index + 1}:`);
+            console.log(renderBoard(move));
+        });
+    }
+}
+
+main();
+    </script>
+</body>
+</html>

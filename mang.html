@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 3</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(4, 50px);
+            grid-template-rows: repeat(4, 50px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: lightgray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .player {
+            background-color: blue;
+            color: white;
+        }
+        .computer {
+            background-color: red;
+            color: white;
+        }
+        #message {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <p id="message">Player's Turn</p>
+
+    <script>
+        const rows = 4;
+        const cols = 4;
+        let board = Array(rows).fill(null).map(() => Array(cols).fill(null));
+        let currentPlayer = 'player'; // Player goes first
+        const boardElement = document.getElementById('board');
+        const messageElement = document.getElementById('message');
+
+        // Initialize the game board
+        function initBoard() {
+            boardElement.innerHTML = ''; // Clear the board
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener('click', handlePlayerMove);
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Handle player's move
+        function handlePlayerMove(event) {
+            if (currentPlayer !== 'player') return;
+
+            const col = parseInt(event.target.dataset.col);
+
+            // Find the lowest available row in the selected column
+            for (let row = rows - 1; row >= 0; row--) {
+                if (board[row][col] === null) {
+                    board[row][col] = 'player';
+                    renderBoard();
+                    if (checkWin('player')) {
+                        messageElement.textContent = 'Player Wins!';
+                        disableBoard();
+                    } else if (isBoardFull()) {
+                        messageElement.textContent = 'It\'s a draw!';
+                        disableBoard();
+                    } else {
+                        currentPlayer = 'computer';
+                        messageElement.textContent = "Computer's Turn";
+                        setTimeout(() => {
+                            console.log('Computer is about to move...');
+                            handleComputerMove();
+                        }, 500); // Delay for computer's move
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Handle computer's move
+        function handleComputerMove() {
+            if (currentPlayer !== 'computer') return;
+
+            let col = findBestMove('computer'); // Try to win
+
+            if (col === -1) {
+                col = findBestMove('player'); // Block the player
+            }
+
+            if (col === -1) {
+                col = getBestStrategicMove(); // Fallback to best move
+            }
+
+            if (col === -1) {
+                console.error("No valid move found for the computer!");
+                return;
+            }
+
+            console.log("Computer selects column:", col);
+
+            // Find the lowest available row in the selected column
+            for (let row = rows - 1; row >= 0; row--) {
+                if (board[row][col] === null) {
+                    board[row][col] = 'computer';
+                    renderBoard();
+                    if (checkWin('computer')) {
+                        messageElement.textContent = 'Computer Wins!';
+                        disableBoard();
+                    } else if (isBoardFull()) {
+                        messageElement.textContent = 'It\'s a draw!';
+                        disableBoard();
+                    } else {
+                        currentPlayer = 'player';
+                        messageElement.textContent = "Player's Turn";
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Find best move for the computer
+        function findBestMove(player) {
+            for (let col = 0; col < cols; col++) {
+                if (board[0][col] === null) {
+                    for (let row = rows - 1; row >= 0; row--) {
+                        if (board[row][col] === null) {
+                            board[row][col] = player;
+                            if (checkWin(player)) {
+                                board[row][col] = null;
+                                return col;
+                            }
+                            board[row][col] = null;
+                            break;
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+
+        // Get the best strategic move if no winning/blocking move is available
+        function getBestStrategicMove() {
+            let bestScore = -Infinity;
+            let bestCol = -1;
+
+            for (let col = 0; col < cols; col++) {
+                if (board[0][col] === null) {
+                    for (let row = rows - 1; row >= 0; row--) {
+                        if (board[row][col] === null) {
+                            board[row][col] = 'computer';
+                            let score = evaluateMove(row, col, 'computer');
+                            board[row][col] = null;
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestCol = col;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // If no strategic move is found, choose a random available column
+            if (bestCol === -1) {
+                bestCol = getRandomAvailableColumn();
+            }
+
+            return bestCol;
+        }
+
+        // Random fallback move if no strategic option is available
+        function getRandomAvailableColumn() {
+            const availableCols = [];
+            for (let col = 0; col < cols; col++) {
+                if (board[0][col] === null) {
+                    availableCols.push(col);
+                }
+            }
+            return availableCols[Math.floor(Math.random() * availableCols.length)];
+        }
+
+        // Evaluate the score of a potential move
+        function evaluateMove(row, col, player) {
+            let score = 0;
+            if (col === 1 || col === 2) {
+                score += 10; // Prioritize center columns
+            }
+            score += countPotentialWins(row, col, player);
+            return score;
+        }
+
+        // Count potential win opportunities for a move
+        function countPotentialWins(row, col, player) {
+            let potentialWins = 0;
+
+            // Check row, column, and diagonal directions for win opportunities
+            potentialWins += checkDirection(row, col, player, 0, 1);  // Horizontal
+            potentialWins += checkDirection(row, col, player, 1, 0);  // Vertical
+            potentialWins += checkDirection(row, col, player, 1, 1);  // Diagonal (top-left to bottom-right)
+            potentialWins += checkDirection(row, col, player, 1, -1); // Diagonal (bottom-left to top-right)
+
+            return potentialWins;
+        }
+
+        // Helper to check potential wins in a direction
+        function checkDirection(row, col, player, rowDir, colDir) {
+            let count = 0;
+            for (let i = -2; i <= 0; i++) {
+                let win = true;
+                for (let j = 0; j < 3; j++) {
+                    const newRow = row + (i + j) * rowDir;
+                    const newCol = col + (i + j) * colDir;
+                    if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols ||
+                        (board[newRow][newCol] !== player && board[newRow][newCol] !== null)) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win) count++;
+            }
+            return count;
+        }
+
+        // Check if the board is full
+        function isBoardFull() {
+            return board[0].every(cell => cell !== null);
+        }
+
+        // Check if the current player has won
+        function checkWin(player) {
+            return checkWinInDirection(player, 0, 1) || // Horizontal
+                   checkWinInDirection(player, 1, 0) || // Vertical
+                   checkWinInDirection(player, 1, 1) || // Diagonal
+                   checkWinInDirection(player, 1, -1);  // Anti-diagonal
+        }
+
+        // Check if there is a win in a specific direction
+        function checkWinInDirection(player, rowDir, colDir) {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (board[row][col] === player) {
+                        let win = true;
+                        for (let i = 1; i < 3; i++) {
+                            const newRow = row + i * rowDir;
+                            const newCol = col + i * colDir;
+                            if (newRow >= rows || newCol >= cols || newCol < 0 || board[newRow][newCol] !== player) {
+                                win = false;
+                                break;
+                            }
+                        }
+                        if (win) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Render the board
+        function renderBoard() {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = boardElement.children[row * cols + col];
+                    if (board[row][col] === 'player') {
+                        cell.classList.add('player');
+                        cell.textContent = 'P';
+                    } else if (board[row][col] === 'computer') {
+                        cell.classList.add('computer');
+                        cell.textContent = 'C';
+                    } else {
+                        cell.classList.remove('player', 'computer');
+                        cell.textContent = '';
+                    }
+                }
+            }
+        }
+
+        // Disable further moves once the game is over
+        function disableBoard() {
+            for (let cell of boardElement.children) {
+                cell.removeEventListener('click', handlePlayerMove);
+            }
+        }
+
+        // Initialize the game
+        initBoard();
+
+    </script>
+</body>
+</html>

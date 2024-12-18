@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        let algseis = "PKPPKPKKTTKPTTTPN";
+        let viimane = 7;
+        let alamseisud = [
+            "PKPPKPKKKTKPTTTPX",
+            "PKPPKPKKTKKPTTTPX", 
+            "PKPPKPKKTTKPTTKPX"
+        ];
+
+
+    function leiaAlamseisud(seis) {
+        let vastane = (seis.substring(seis.length - 1) == "X") ? "N" : "X";
+        let vastused = [];
+  
+        for (let i = 0; i < 16; i++) {
+            if (seis[i] == 'T') {
+            let uusSeis = seis.substring(0, i) + vastane + seis.substring(i + 1);
+            vastused.push(uusSeis);
+            }
+        }
+
+        return vastused;
+    }
+    function checkWin(seis, player) {
+
+    const winningCombos = [
+
+        [0, 1, 2], [1, 2, 3], [4, 5, 6], [5, 6, 7], 
+        [8, 9, 10], [9, 10, 11], [12, 13, 14], [13, 14, 15],
+
+        [0, 4, 8], [4, 8, 12], [1, 5, 9], [5, 9, 13], 
+        [2, 6, 10], [6, 10, 14], [3, 7, 11], [7, 11, 15],
+
+        [0, 5, 10], [1, 6, 11], [4, 9, 14], [5, 10, 15],
+        [2, 5, 8], [3, 6, 9], [6, 9, 12], [7, 10, 13]
+    ];
+    
+
+    for (let combo of winningCombos) {
+        if (combo.every(index => seis[index] == player)) {
+        return true;
+        }
+    }
+    return false;
+    }
+
+    function puuHTML(seis) {
+        let sisemine = "";
+        let a = leiaAlamseisud(seis);
+        let s = "?";
+
+        if (a.length > 0) {
+            sisemine = "<ul>";
+            for (let alamseis of a) {
+            let abi = puuHTML(alamseis);
+            sisemine += abi.html;
+            
+
+            if (checkWin(alamseis, "X")) {
+                s = "-"; 
+            }
+            if (checkWin(alamseis, "N")) {
+                s = "+"; 
+            }
+            }
+            sisemine += "</ul>";
+        } else {
+
+            if (checkWin(seis, "X")) {
+            s = "-"; 
+            } else if (checkWin(seis, "N")) {
+            s = "+";
+            } else {
+            s = "=";
+            }
+    }
+
+    return { html: "<li>" + seis + s + sisemine + "</li>", skoor: s };
+    }
+
+
+
+        console.log(leiaAlamseisud(algseis));
+    </script>
+</head>
+<body onload="kiht1.innerHTML=puuHTML(algseis).html">
+    <ul id="kiht1"></ul>
+  </body>
+</html>

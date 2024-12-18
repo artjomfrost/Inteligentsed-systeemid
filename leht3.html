@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+   <script>
+    let algseis="6N";
+	let viimane=15;
+
+	function leiaAlamseisud(seis){
+	  let vastane=(seis.substring(seis.length-1)=="X")?"N":"X";
+	  let koht=parseInt(seis.substring(0, seis.length-1));
+	  //Loe alamseisudeks vaid need, mis ei lähe viimasest 
+	  //kohast kaugemale  12:34
+	  let vastused=[(koht+1)+vastane, (koht+2)+vastane];
+	  vastused=vastused.filter(vastus => 
+	    parseInt(vastus.substring(0, vastus.length-1))<=viimane);
+	  return vastused;
+	}
+	
+
+	function puuHTML(seis){
+	   let sisemine="";
+	   let a=leiaAlamseisud(seis);
+	   let s="?";
+	   if(a.length>0){
+	     sisemine="<ul>";
+		 for(let alamseis of a){
+		   let abi=puuHTML(alamseis);
+		   sisemine+=abi.html;
+		   if(s=="?"){s=abi.skoor;}
+		   if(seis[seis.length-1]=="X" && abi.skoor=="+"){s="+";}
+		   if(seis[seis.length-1]=="N" && abi.skoor=="-"){s="-";}
+		 }
+		 sisemine+="</ul>"
+	   } else {
+	      s=(seis[seis.length-1]=="X")?"-":"+";
+	   }
+	   return {html:"<li>"+seis+s+sisemine+"</li>", skoor:s};
+	}
+
+   </script>
+  </head>
+  <body onload="kiht1.innerHTML=puuHTML('3X').html">
+    <ul id="kiht1"></ul>
+  </body>
+</html>

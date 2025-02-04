@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Shoal</title>
+</head>
+<body>
+    <canvas id="canvas"></canvas>  
+    <script>
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const FISH_COUNT = 200;
+        const FISH_RADIUS = 5;
+        const MAX_SPEED = 1.0;
+        const COHESION_RADIUS = 75;
+        const SEPARATION_RADIUS = 40;
+        const SEPARATION_FORCE = 0.5; 
+        const PREDATOR_RADIUS = 150;
+        const BORDER_MARGIN = 5;
+        
+        const STONE_RADIUS = 50;
+        const STONE = { x: canvas.width / 2, y: canvas.height / 2 };
+
+        let fishArray = [];
+        let predator = { x: canvas.width / 3, y: canvas.height / 3 };
+
+        class Fish {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.vx = Math.random() * MAX_SPEED - MAX_SPEED / 2;
+            this.vy = Math.random() * MAX_SPEED - MAX_SPEED / 2;
+        }
+
+        move() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x < FISH_RADIUS || this.x > canvas.width - FISH_RADIUS) this.vx *= -1;
+            if (this.y < FISH_RADIUS || this.y > canvas.height - FISH_RADIUS) this.vy *= -1;
+        }
+
+        avoidStone() {
+            const dx = this.x - STONE.x;
+            const dy = this.y - STONE.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < STONE_RADIUS + FISH_RADIUS) {
+            this.vx += (dx / distance) * 0.8;
+            this.vy += (dy / distance) * 0.8;
+            }
+        }
+
+
+        reactToPredator() {
+            const dx = this.x - predator.x;
+            const dy = this.y - predator.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < PREDATOR_RADIUS) {
+            this.vx += (dx / distance) * 2;
+            this.vy += (dy / distance) * 2;
+            }
+        }
+
+        flock(fishArray) {
+            let centerX = 0, centerY = 0, separationX = 0, separationY = 0, count = 0;
+
+            fishArray.forEach(other => {
+            if (other === this) return;
+            const dx = this.x - other.x;
+            const dy = this.y - other.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < COHESION_RADIUS) {
+                centerX += other.x;
+                centerY += other.y;
+                count++;
+            }
+
+            if (distance < SEPARATION_RADIUS && distance > 0) {
+                separationX += dx / distance;
+                separationY += dy / distance;
+            }
+            });
+
+            if (count > 0) {
+            centerX /= count;
+            centerY /= count;
+            this.vx += (centerX - this.x) * 0.01;
+            this.vy += (centerY - this.y) * 0.01;
+            }
+
+            this.vx += separationX * SEPARATION_FORCE;
+            this.vy += separationY * SEPARATION_FORCE;
+        }
+
+        limitSpeed() {
+            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            if (speed > MAX_SPEED) {
+            this.vx = (this.vx / speed) * MAX_SPEED;
+            this.vy = (this.vy / speed) * MAX_SPEED;
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, FISH_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+            ctx.closePath();
+        }
+        }
+
+        function init() {
+        for (let i = 0; i < FISH_COUNT; i++) {
+            const x = canvas.width / 2 + Math.random() * 50 - 25;
+            const y = canvas.height / 2 + Math.random() * 50 - 25;
+            fishArray.push(new Fish(x, y));
+        }
+        }
+
+        function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.beginPath();
+        ctx.arc(STONE.x, STONE.y, STONE_RADIUS, 0, Math.PI * 2);
+        ctx.fillStyle = 'gray';
+        ctx.fill();
+        ctx.closePath();
+
+        fishArray.forEach(fish => {
+            fish.avoidStone(); 
+            fish.reactToPredator();
+            fish.flock(fishArray);
+            fish.limitSpeed();
+            fish.move();
+            fish.draw();
+        });
+
+        ctx.beginPath();
+        ctx.arc(predator.x, predator.y, PREDATOR_RADIUS, 0, Math.PI * 2);
+        ctx.closePath();
+
+        requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('mousemove', e => {
+        predator.x = e.clientX;
+        predator.y = e.clientY;
+        });
+
+        init();
+        animate();
+
+
+    </script>  
+
+</body>
+</html>
